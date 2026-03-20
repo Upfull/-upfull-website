@@ -66,12 +66,11 @@ nav{
 .hero-bg{
   position:absolute;inset:0;
   background-size:cover;background-position:center 20%;
-  filter:brightness(0.45) saturate(0.85);
   transition:opacity 0.5s;
 }
 .hero-overlay{
   position:absolute;inset:0;
-  background:linear-gradient(90deg,rgba(10,10,10,0.92) 30%,rgba(10,10,10,0.5) 65%,rgba(10,10,10,0.1) 100%);
+  background:linear-gradient(90deg,rgba(10,10,10,0.55) 25%,rgba(10,10,10,0.25) 60%,rgba(10,10,10,0.05) 100%);
 }
 .hero-bottom{
   position:absolute;bottom:0;left:0;right:0;height:140px;
@@ -420,7 +419,36 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:24px 28p
         <div class="sh-left"><div class="sl">Dernières nouvelles</div><div class="st">Actualités</div></div>
         <a href="#" class="sh-right">Tout voir →</a>
       </div>
-      <div class="news-hero-grid" id="news-hero-grid"></div>
+      
+      <div class="news-hero-grid" id="news-hero-grid">
+        <div class="nc-big" onclick="openArticle(0)">
+          <div class="nc-img-wrap"><img class="nc-img" src="https://img.youtube.com/vi/jMvwTRL1mLY/hqdefault.jpg" alt="Kon Sa"></div>
+          <div class="nc-body">
+            <div class="nc-meta"><span class="nc-artist-label">Rachelle Allison</span><span class="badge badge-red">Clip</span><span class="nc-date"> · 20 mars 2026</span></div>
+            <div class="nc-title-big">Rachelle Allison dévoile "Kon Sa" — un nouveau clip vibrant</div>
+            <div class="nc-excerpt">Rachelle Allison revient en force avec Kon Sa, un nouveau clip aux couleurs caribéennes. Entre énergie zouk et modernité, l'artiste confirme son statut d'incontournable.</div>
+            <span class="nc-read">Lire la suite →</span>
+          </div>
+        </div>
+        <div class="news-side">
+          <div class="nc-sm" onclick="openArticle(1)">
+            <div class="nc-sm-img-wrap"><img class="nc-sm-img" src="https://img.youtube.com/vi/8zBioXUF1xg/hqdefault.jpg" alt="Rody Smashboy"></div>
+            <div class="nc-sm-body">
+              <div class="nc-meta"><span class="badge badge-red">Clip</span><span class="nc-date"> · 20 mars 2026</span></div>
+              <div class="nc-artist-label">Rody Smashboy</div>
+              <div class="nc-title-sm">Rody Smashboy — "Pa Di Sa Boug Li" (Prod by D.O.C Fix Dem)</div>
+            </div>
+          </div>
+          <div class="nc-sm" onclick="openArticle(2)">
+            <div class="nc-sm-img-wrap"><img class="nc-sm-img" src="https://promotion-cover-images.cdn.bfan.link/cdn-cgi/image/width=480,height=480/https://promotion-cover-images.cdn.bfan.link/3f722ac1-58cf-405e-9820-380030443f44" alt="Ken J"></div>
+            <div class="nc-sm-body">
+              <div class="nc-meta"><span class="badge badge-outline">Sortie</span><span class="nc-date"> · 20 mars 2026</span></div>
+              <div class="nc-artist-label">Ken J</div>
+              <div class="nc-title-sm">Ken J — "One Shot 2" disponible sur toutes les plateformes</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="news-grid3" id="news-grid3"></div>
     </div>
   </div>
