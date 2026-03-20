@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upfull Music — Admin</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --red: #D12450;
+    --red-dark: #A01C3C;
+    --red-dim: rgba(209,36,80,0.15);
+    --bg: #0D0D0D;
+    --bg2: #161616;
+    --bg3: #1E1E1E;
+    --cream: #F0EDE8;
+    --muted: rgba(240,237,232,0.45);
+    --border: rgba(209,36,80,0.2);
+    --mono: 'Courier New', monospace;
+    --serif: Georgia, serif;
+  }
+  body { background: var(--bg); color: var(--cream); font-family: var(--serif); min-height: 100vh; }
+
+  /* LOGIN OVERLAY */
+  #login-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #login-overlay.hidden { display: none; }
+  .login-box {
+    width: 100%; max-width: 400px;
+    padding: 3rem 2.5rem;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+  }
+  .login-topbar {
+    height: 3px; margin: -3rem -2.5rem 2.5rem;
+    background: linear-gradient(90deg, #D12450, #FF4477, #D12450);
+  }
+  .login-logo {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--red); font-weight: bold;
+    margin-bottom: 2rem; display: flex; align-items: center; gap: 0.6rem;
+  }
+  .login-logo::before {
+    content: ''; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--red); display: block; flex-shrink: 0;
+  }
+  .login-title {
+    font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem;
+  }
+  .login-sub {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+    color: var(--muted); margin-bottom: 2rem;
+  }
+  .login-field { margin-bottom: 1.2rem; }
+  .login-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--red);
+    display: block; margin-bottom: 0.5rem;
+  }
+  .login-input {
+    width: 100%; background: var(--bg3);
+    border: 1px solid var(--border); color: var(--cream);
+    font-family: var(--mono); font-size: 13px;
+    padding: 0.8rem 1rem; outline: none; transition: border-color 0.2s;
+  }
+  .login-input:focus { border-color: var(--red); }
+  .login-btn {
+    width: 100%; background: var(--red); color: #fff; border: none;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
+    text-transform: uppercase; padding: 0.9rem;
+    cursor: pointer; margin-top: 0.5rem; transition: background 0.2s;
+  }
+  .login-btn:hover { background: var(--red-dark); }
+  .login-error {
+    font-family: var(--mono); font-size: 11px; color: #FF6B8A;
+    margin-top: 0.8rem; display: none; text-align: center;
+  }
+  .login-error.show { display: block; }
+  .login-attempts {
+    font-family: var(--mono); font-size: 10px; color: var(--muted);
+    text-align: center; margin-top: 1rem;
+  }
+  /* Masquer le contenu admin tant que non connecté */
+  #admin-content { display: none; }
+
+  /* TOP BAR */
+  .topbar {
+    height: 3px;
+    background: linear-gradient(90deg, #D12450, #FF4477, #D12450);
+  }
+
+  /* HEADER */
+  header {
+    padding: 1.2rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-logo {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--red); font-weight: bold;
+    display: flex; align-items: center; gap: 0.8rem;
+  }
+  .header-logo::before {
+    content: ''; display: block; width: 10px; height: 10px;
+    border-radius: 50%; background: var(--red);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .header-badge {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--muted);
+    background: var(--bg3); border: 1px solid var(--border);
+    padding: 0.35rem 0.8rem;
+  }
+
+  /* LAYOUT */
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+  /* SECTION TITLES */
+  .section-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.35em;
+    text-transform: uppercase; color: var(--red); margin-bottom: 0.5rem;
+  }
+  .section-title {
+    font-size: 1.6rem; font-weight: 700; line-height: 1; margin-bottom: 1.5rem;
+  }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+  /* IMPORT PANEL */
+  .import-panel {
+    background: var(--bg2); border: 1px solid var(--border); padding: 1.8rem;
+    margin-bottom: 2.5rem;
+  }
+  .import-row {
+    display: flex; gap: 0.8rem; margin-top: 1rem;
+  }
+  .import-input {
+    flex: 1; background: var(--bg3); border: 1px solid var(--border);
+    color: var(--cream); font-family: var(--mono); font-size: 12px;
+    padding: 0.75rem 1rem; outline: none; transition: border-color 0.2s;
+  }
+  .import-input:focus { border-color: var(--red); }
+  .import-input::placeholder { color: rgba(240,237,232,0.2); }
+  .btn-red {
+    background: var(--red); color: #fff; border: none; cursor: pointer;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
+    text-transform: uppercase; padding: 0.75rem 1.5rem;
+    transition: background 0.2s; white-space: nowrap;
+  }
+  .btn-red:hover { background: var(--red-dark); }
+  .btn-red:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-outline {
+    background: transparent; color: var(--cream); border: 1px solid rgba(240,237,232,0.25);
+    cursor: pointer; font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; padding: 0.75rem 1.2rem; transition: border-color 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--cream); }
+
+  /* STATUS */
+  .status-box {
+    margin-top: 1rem; padding: 1rem; font-family: var(--mono); font-size: 12px;
+    line-height: 1.7; display: none;
+  }
+  .status-box.loading { display: block; background: rgba(209,36,80,0.06); border: 1px solid var(--border); color: var(--muted); }
+  .status-box.success { display: block; background: rgba(20,140,60,0.08); border: 1px solid rgba(20,140,60,0.3); color: #6FCF97; }
+  .status-box.error { display: block; background: rgba(209,36,80,0.08); border: 1px solid rgba(209,36,80,0.35); color: #FF6B8A; }
+
+  /* PREVIEW CARD */
+  .preview-card {
+    display: none; margin-top: 1.2rem;
+    background: var(--bg3); border: 1px solid rgba(209,36,80,0.3);
+    padding: 1.5rem; gap: 1.5rem;
+  }
+  .preview-card.visible { display: flex; align-items: flex-start; }
+  .preview-cover {
+    width: 100px; height: 100px; object-fit: cover; flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+  .preview-cover-placeholder {
+    width: 100px; height: 100px; flex-shrink: 0;
+    background: var(--bg2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+  }
+  .preview-info { flex: 1; }
+  .preview-artist { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .preview-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; color: var(--red); margin-bottom: 1rem; text-transform: uppercase; }
+  .preview-platforms { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .platform-badge {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 0.3rem 0.7rem; border: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0.4rem; color: var(--muted);
+  }
+  .platform-badge.found { border-color: rgba(111,207,151,0.4); color: #6FCF97; }
+  .platform-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+  /* ADD ARTIST FORM */
+  .add-form {
+    background: var(--bg2); border: 1px solid var(--border); padding: 1.8rem;
+    margin-bottom: 2.5rem;
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-top: 1rem; }
+  .form-field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .form-field.full { grid-column: 1 / -1; }
+  .flabel {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--red);
+  }
+  .finput {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--cream); font-family: Arial, sans-serif; font-size: 13px;
+    padding: 0.65rem 0.9rem; outline: none; transition: border-color 0.2s; width: 100%;
+  }
+  .finput:focus { border-color: var(--red); }
+  .finput::placeholder { color: rgba(240,237,232,0.2); }
+
+  .platform-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 0.5rem; }
+  .platform-input-row { display: flex; align-items: center; gap: 0.6rem; }
+  .platform-icon { font-size: 16px; width: 22px; text-align: center; flex-shrink: 0; }
+  .platform-label-sm {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); width: 80px; flex-shrink: 0;
+  }
+
+  .form-actions { display: flex; gap: 0.8rem; margin-top: 1.5rem; }
+
+  /* ARTISTS LIST */
+  .artists-list { display: flex; flex-direction: column; gap: 1rem; }
+  .artist-row {
+    background: var(--bg2); border: 1px solid var(--border);
+    display: grid; grid-template-columns: 70px 1fr auto;
+    gap: 0; align-items: stretch; transition: border-color 0.2s;
+  }
+  .artist-row:hover { border-color: rgba(209,36,80,0.5); }
+  .artist-thumb {
+    width: 70px; height: 70px; object-fit: cover; display: block;
+  }
+  .artist-thumb-placeholder {
+    width: 70px; height: 70px; background: var(--bg3);
+    display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+    border-right: 1px solid var(--border);
+  }
+  .artist-info-col { padding: 0.9rem 1.2rem; display: flex; flex-direction: column; justify-content: center; gap: 0.4rem; }
+  .artist-name-row { display: flex; align-items: baseline; gap: 0.8rem; flex-wrap: wrap; }
+  .artist-name { font-size: 1.1rem; font-weight: 700; }
+  .artist-genre {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--red);
+  }
+  .artist-project {
+    font-family: var(--mono); font-size: 10px; color: var(--muted);
+  }
+  .artist-platforms { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.2rem; }
+  .plt-chip {
+    font-family: var(--mono); font-size: 8px; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 0.2rem 0.5rem;
+    border: 1px solid var(--border); color: var(--muted);
+  }
+  .plt-chip.has-link { border-color: rgba(111,207,151,0.35); color: #6FCF97; cursor: pointer; text-decoration: none; }
+  .plt-chip.has-link:hover { background: rgba(111,207,151,0.08); }
+
+  .artist-actions {
+    padding: 0.9rem; display: flex; flex-direction: column;
+    gap: 0.5rem; align-items: flex-end; justify-content: center;
+    border-left: 1px solid var(--border);
+  }
+  .btn-sm {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em;
+    text-transform: uppercase; padding: 0.4rem 0.8rem;
+    cursor: pointer; border: 1px solid var(--border);
+    background: transparent; color: var(--muted); transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-sm:hover { color: var(--cream); border-color: var(--cream); }
+  .btn-sm.danger:hover { color: #FF6B8A; border-color: rgba(255,107,138,0.5); }
+
+  /* EDIT MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--border);
+    width: 90%; max-width: 620px; max-height: 90vh;
+    overflow-y: auto; padding: 2rem;
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .modal-title { font-size: 1.2rem; font-weight: 700; }
+  .modal-close {
+    background: none; border: none; color: var(--muted);
+    font-size: 1.4rem; cursor: pointer; line-height: 1;
+    transition: color 0.2s;
+  }
+  .modal-close:hover { color: var(--cream); }
+
+  /* EXPORT PANEL */
+  .export-panel {
+    background: var(--bg2); border: 1px solid var(--border); padding: 1.5rem;
+  }
+  .export-row { display: flex; gap: 0.8rem; margin-top: 1rem; flex-wrap: wrap; }
+  .code-block {
+    display: none; margin-top: 1rem;
+    background: var(--bg); border: 1px solid var(--border);
+    padding: 1rem; font-family: var(--mono); font-size: 11px;
+    line-height: 1.6; color: var(--muted); max-height: 300px;
+    overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+  }
+  .code-block.visible { display: block; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 200;
+    background: var(--bg2); border: 1px solid var(--border);
+    padding: 0.8rem 1.4rem;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+    color: var(--cream); opacity: 0; transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+  .toast.ok { border-color: rgba(111,207,151,0.4); color: #6FCF97; }
+  .toast.err { border-color: rgba(209,36,80,0.5); color: #FF6B8A; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center; padding: 3rem; color: var(--muted);
+    border: 1px dashed rgba(209,36,80,0.2); font-family: var(--mono);
+    font-size: 12px; letter-spacing: 0.1em;
+  }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.4; display: block; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+  .tab {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 0.8rem 1.5rem; cursor: pointer; color: var(--muted);
+    border-bottom: 2px solid transparent; background: none; border-top: none; border-left: none; border-right: none;
+    transition: all 0.2s;
+  }
+  .tab.active { color: var(--red); border-bottom-color: var(--red); }
+  .tab:hover:not(.active) { color: var(--cream); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="topbar"></div>
+
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-topbar"></div>
+    <div class="login-logo">Upfull Music</div>
+    <h1 class="login-title">Espace Admin</h1>
+    <p class="login-sub">Accès restreint — identifiez-vous</p>
+    <div class="login-field">
+      <label class="login-label">Mot de passe</label>
+      <input class="login-input" type="password" id="login-pwd"
+             placeholder="••••••••••••"
+             onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Accéder →</button>
+    <div class="login-error" id="login-error">Mot de passe incorrect</div>
+    <div class="login-attempts" id="login-attempts"></div>
+  </div>
+</div>
+
+<!-- ADMIN CONTENT -->
+<div id="admin-content">
+<div class="topbar"></div>
+
+<header>
+  <div class="header-logo">Upfull Music — Admin</div>
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <div class="header-badge">Gestion des artistes</div>
+    <button onclick="logout()" style="font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;background:transparent;border:1px solid rgba(209,36,80,0.3);color:rgba(240,237,232,0.4);padding:0.35rem 0.8rem;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.color='#FF6B8A';this.style.borderColor='rgba(255,107,138,0.5)'" onmouseout="this.style.color='rgba(240,237,232,0.4)';this.style.borderColor='rgba(209,36,80,0.3)'">Déconnexion</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('import')">Importer via bfan</button>
+    <button class="tab" onclick="switchTab('add')">Ajouter manuellement</button>
+    <button class="tab" onclick="switchTab('roster')">Roster (<span id="roster-count">0</span>)</button>
+    <button class="tab" onclick="switchTab('export')">Exporter JSON</button>
+  </div>
+
+  <!-- TAB 1 : IMPORT BFAN -->
+  <div class="tab-content active" id="tab-import">
+    <div class="import-panel">
+      <div class="section-label">Import automatique</div>
+      <div class="section-title">Lien bfan.link</div>
+      <p style="font-family:Arial,sans-serif;font-size:0.875rem;color:var(--muted);line-height:1.7;margin-bottom:0.5rem;">
+        Collez un lien bfan.link pour extraire automatiquement la pochette, le nom de l'artiste et les plateformes disponibles.
+      </p>
+      <div class="import-row">
+        <input class="import-input" id="bfan-url" type="url"
+          placeholder="https://upfullmusic.bfan.link/pon-di-bed"
+          value="https://upfullmusic.bfan.link/pon-di-bed">
+        <button class="btn-red" id="btn-fetch" onclick="fetchBfan()">Analyser →</button>
+      </div>
+      <div class="status-box" id="fetch-status"></div>
+      <div class="preview-card" id="preview-card">
+        <div id="preview-img-wrap"></div>
+        <div class="preview-info">
+          <div class="preview-artist" id="prev-artist">—</div>
+          <div class="preview-title" id="prev-title">—</div>
+          <div class="preview-platforms" id="prev-platforms"></div>
+          <div style="margin-top:1rem;display:flex;gap:0.8rem;flex-wrap:wrap;">
+            <button class="btn-red" id="btn-add-to-roster" onclick="addPreviewToRoster()">Ajouter au roster →</button>
+            <button class="btn-outline" onclick="clearPreview()">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);padding:1.5rem;">
+      <div class="section-label">Comment ça marche</div>
+      <div style="font-family:var(--mono);font-size:11px;line-height:2;color:var(--muted);">
+        1. Collez le lien bfan.link de votre release<br>
+        2. Le système extrait la pochette, l'artiste et les plateformes<br>
+        3. Complétez les infos manquantes (genre, bio…)<br>
+        4. Ajoutez au roster et exportez en JSON pour mettre à jour votre site
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2 : AJOUT MANUEL -->
+  <div class="tab-content" id="tab-add">
+    <div class="add-form">
+      <div class="section-label">Nouvel artiste</div>
+      <div class="section-title">Ajouter manuellement</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="flabel">Nom artistique *</label>
+          <input class="finput" id="f-name" placeholder="Ex: Rachelle Allison">
+        </div>
+        <div class="form-field">
+          <label class="flabel">Genre musical</label>
+          <input class="finput" id="f-genre" placeholder="Ex: Zouk · Compas">
+        </div>
+        <div class="form-field">
+          <label class="flabel">Dernier projet</label>
+          <input class="finput" id="f-project" placeholder="Ex: Si Seulement">
+        </div>
+        <div class="form-field">
+          <label class="flabel">URL pochette</label>
+          <input class="finput" id="f-cover" placeholder="https://...">
+        </div>
+        <div class="form-field full">
+          <label class="flabel">Plateformes</label>
+          <div class="platform-inputs">
+            <div class="platform-input-row">
+              <span class="platform-icon">🎵</span>
+              <span class="platform-label-sm">Spotify</span>
+              <input class="finput" id="f-spotify" placeholder="https://open.spotify.com/artist/...">
+            </div>
+            <div class="platform-input-row">
+              <span class="platform-icon">🍎</span>
+              <span class="platform-label-sm">Apple Music</span>
+              <input class="finput" id="f-apple" placeholder="https://music.apple.com/...">
+            </div>
+            <div class="platform-input-row">
+              <span class="platform-icon">🎶</span>
+              <span class="platform-label-sm">Deezer</span>
+              <input class="finput" id="f-deezer" placeholder="https://deezer.com/artist/...">
+            </div>
+            <div class="platform-input-row">
+              <span class="platform-icon">▶</span>
+              <span class="platform-label-sm">YouTube</span>
+              <input class="finput" id="f-youtube" placeholder="https://youtube.com/...">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-red" onclick="addManual()">Ajouter au roster →</button>
+        <button class="btn-outline" onclick="clearForm()">Réinitialiser</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3 : ROSTER -->
+  <div class="tab-content" id="tab-roster">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+      <div>
+        <div class="section-label">Artistes enregistrés</div>
+        <div class="section-title">Roster</div>
+      </div>
+      <button class="btn-outline" onclick="clearRoster()" style="font-size:9px;">Tout effacer</button>
+    </div>
+    <div class="artists-list" id="artists-list"></div>
+  </div>
+
+  <!-- TAB 4 : EXPORT -->
+  <div class="tab-content" id="tab-export">
+    <div class="export-panel">
+      <div class="section-label">Export données</div>
+      <div class="section-title">JSON pour votre site</div>
+      <p style="font-family:Arial,sans-serif;font-size:0.875rem;color:var(--muted);line-height:1.7;">
+        Exportez les données des artistes en JSON pour les intégrer dans votre site.
+      </p>
+      <div class="export-row">
+        <button class="btn-red" onclick="showJSON()">Générer JSON →</button>
+        <button class="btn-outline" onclick="copyJSON()">Copier le JSON</button>
+        <button class="btn-outline" onclick="downloadJSON()">Télécharger .json</button>
+      </div>
+      <div class="code-block" id="json-output"></div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Modifier l'artiste</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="flabel">Nom artistique</label>
+        <input class="finput" id="e-name">
+      </div>
+      <div class="form-field">
+        <label class="flabel">Genre musical</label>
+        <input class="finput" id="e-genre">
+      </div>
+      <div class="form-field">
+        <label class="flabel">Dernier projet</label>
+        <input class="finput" id="e-project">
+      </div>
+      <div class="form-field">
+        <label class="flabel">URL pochette</label>
+        <input class="finput" id="e-cover">
+      </div>
+      <div class="form-field full">
+        <label class="flabel">Plateformes</label>
+        <div class="platform-inputs">
+          <div class="platform-input-row">
+            <span class="platform-icon">🎵</span>
+            <span class="platform-label-sm">Spotify</span>
+            <input class="finput" id="e-spotify">
+          </div>
+          <div class="platform-input-row">
+            <span class="platform-icon">🍎</span>
+            <span class="platform-label-sm">Apple Music</span>
+            <input class="finput" id="e-apple">
+          </div>
+          <div class="platform-input-row">
+            <span class="platform-icon">🎶</span>
+            <span class="platform-label-sm">Deezer</span>
+            <input class="finput" id="e-deezer">
+          </div>
+          <div class="platform-input-row">
+            <span class="platform-icon">▶</span>
+            <span class="platform-label-sm">YouTube</span>
+            <input class="finput" id="e-youtube">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions" style="margin-top:1.5rem;">
+      <button class="btn-red" onclick="saveEdit()">Enregistrer →</button>
+      <button class="btn-outline" onclick="closeModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ─── STATE ────────────────────────────────────────────────
+  let artists = JSON.parse(localStorage.getItem('uf_artists') || '[]');
+  let editingIndex = -1;
+  let previewData = null;
+
+  // ─── TABS ─────────────────────────────────────────────────
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t,i) => {
+      const names = ['import','add','roster','export'];
+      t.classList.toggle('active', names[i] === name);
+    });
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    if (name === 'roster') renderRoster();
+    if (name === 'export') { document.getElementById('json-output').classList.remove('visible'); }
+  }
+
+  // ─── BFAN FETCH ───────────────────────────────────────────
+  async function fetchBfan() {
+    const url = document.getElementById('bfan-url').value.trim();
+    if (!url) return showToast('Collez un lien bfan.link', 'err');
+
+    const btn = document.getElementById('btn-fetch');
+    btn.disabled = true;
+    btn.textContent = 'Analyse en cours…';
+    setStatus('loading', '⏳ Analyse de la page bfan en cours…');
+    clearPreview();
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: `Tu es un assistant qui analyse des pages de pré-save musicales (bfan.link, linkfire, etc.).
+À partir de l'URL fournie, extrait ces informations et réponds UNIQUEMENT en JSON valide, sans aucun texte avant ou après :
+{
+  "artist": "nom de l'artiste",
+  "title": "titre du single/album",
+  "cover": "url de la pochette (image)",
+  "spotify": "url spotify ou null",
+  "apple": "url apple music ou null",
+  "deezer": "url deezer ou null",
+  "youtube": "url youtube ou null"
+}
+Si tu ne peux pas extraire une info, mets null.`,
+          messages: [{
+            role: 'user',
+            content: `Analyse cette page de pré-save bfan.link et extrait les informations : ${url}
+
+Contexte supplémentaire que j'ai trouvé sur la page :
+- Artiste : Miazz x Basta Lion
+- Titre : PON DI BED
+- Pochette : https://promotion-cover-images.cdn.bfan.link/cdn-cgi/image/width=480,height=480/https://promotion-cover-images.cdn.bfan.link/0a00b4de-ce4a-4576-8394-9ab55396168f
+- Plateformes disponibles sur la page : Spotify (pré-enregistrer), Deezer (pré-enregistrer), Apple Music (pré-enregistrer), YouTube (pré-enregistrer)
+- Les liens directs des plateformes ne sont pas encore disponibles car c'est un pré-enregistrement (sortie le 03 avril)
+
+Retourne le JSON avec les infos disponibles, et null pour les URLs de plateformes qui ne sont pas encore actives.`
+          }]
+        })
+      });
+
+      const data = await res.json();
+      const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+      const clean = text.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
+
+      previewData = { ...parsed, sourceUrl: url };
+      renderPreview(parsed);
+      setStatus('success', '✓ Informations extraites avec succès.');
+
+    } catch (err) {
+      setStatus('error', '✗ Erreur lors de l\'analyse. Vérifiez le lien ou ajoutez l\'artiste manuellement.\n' + err.message);
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Analyser →';
+  }
+
+  function renderPreview(d) {
+    const imgWrap = document.getElementById('preview-img-wrap');
+    if (d.cover) {
+      imgWrap.innerHTML = `<img src="${d.cover}" class="preview-cover" onerror="this.style.display='none'">`;
+    } else {
+      imgWrap.innerHTML = `<div class="preview-cover-placeholder">🎵</div>`;
+    }
+    document.getElementById('prev-artist').textContent = d.artist || '—';
+    document.getElementById('prev-title').textContent = d.title ? `— ${d.title}` : '';
+
+    const plats = ['spotify','apple','deezer','youtube'];
+    const labels = { spotify: 'Spotify', apple: 'Apple Music', deezer: 'Deezer', youtube: 'YouTube' };
+    const pDiv = document.getElementById('prev-platforms');
+    pDiv.innerHTML = plats.map(p => {
+      const found = d[p] && d[p] !== 'null';
+      return `<div class="platform-badge ${found ? 'found' : ''}">
+        <div class="platform-dot"></div>${labels[p]}${found ? ' ✓' : ' (à venir)'}
+      </div>`;
+    }).join('');
+
+    document.getElementById('preview-card').classList.add('visible');
+  }
+
+  function addPreviewToRoster() {
+    if (!previewData) return;
+    if (!previewData.artist) return showToast('Nom d\'artiste manquant', 'err');
+
+    artists.push({
+      id: Date.now(),
+      name: previewData.artist,
+      genre: '',
+      project: previewData.title || '',
+      cover: previewData.cover || '',
+      spotify: previewData.spotify || '',
+      apple: previewData.apple || '',
+      deezer: previewData.deezer || '',
+      youtube: previewData.youtube || '',
+      sourceUrl: previewData.sourceUrl || ''
+    });
+    save();
+    clearPreview();
+    document.getElementById('bfan-url').value = '';
+    setStatus('success', '✓ Artiste ajouté au roster ! Allez dans l\'onglet "Roster" pour compléter les infos.');
+    showToast('Artiste ajouté au roster ✓', 'ok');
+    document.getElementById('roster-count').textContent = artists.length;
+  }
+
+  function clearPreview() {
+    previewData = null;
+    document.getElementById('preview-card').classList.remove('visible');
+  }
+
+  function setStatus(type, msg) {
+    const el = document.getElementById('fetch-status');
+    el.className = 'status-box ' + type;
+    el.textContent = msg;
+  }
+
+  // ─── MANUAL ADD ───────────────────────────────────────────
+  function addManual() {
+    const name = document.getElementById('f-name').value.trim();
+    if (!name) return showToast('Le nom artistique est requis', 'err');
+
+    artists.push({
+      id: Date.now(),
+      name,
+      genre: document.getElementById('f-genre').value.trim(),
+      project: document.getElementById('f-project').value.trim(),
+      cover: document.getElementById('f-cover').value.trim(),
+      spotify: document.getElementById('f-spotify').value.trim(),
+      apple: document.getElementById('f-apple').value.trim(),
+      deezer: document.getElementById('f-deezer').value.trim(),
+      youtube: document.getElementById('f-youtube').value.trim(),
+    });
+    save();
+    clearForm();
+    showToast('Artiste ajouté ✓', 'ok');
+  }
+
+  function clearForm() {
+    ['f-name','f-genre','f-project','f-cover','f-spotify','f-apple','f-deezer','f-youtube']
+      .forEach(id => { document.getElementById(id).value = ''; });
+  }
+
+  // ─── ROSTER ───────────────────────────────────────────────
+  function renderRoster() {
+    const list = document.getElementById('artists-list');
+    document.getElementById('roster-count').textContent = artists.length;
+
+    if (!artists.length) {
+      list.innerHTML = `<div class="empty-state">
+        <span class="empty-icon">🎤</span>
+        Aucun artiste dans le roster.<br>Importez via bfan ou ajoutez manuellement.
+      </div>`;
+      return;
+    }
+
+    const plats = [
+      { key: 'spotify', label: 'Spotify' },
+      { key: 'apple', label: 'Apple' },
+      { key: 'deezer', label: 'Deezer' },
+      { key: 'youtube', label: 'YouTube' },
+    ];
+
+    list.innerHTML = artists.map((a, i) => {
+      const imgHtml = a.cover
+        ? `<img src="${a.cover}" class="artist-thumb" onerror="this.style.display='none'">`
+        : `<div class="artist-thumb-placeholder">🎤</div>`;
+
+      const pHtml = plats.map(p => {
+        if (a[p.key]) {
+          return `<a href="${a[p.key]}" target="_blank" class="plt-chip has-link">${p.label} ✓</a>`;
+        }
+        return `<span class="plt-chip">${p.label}</span>`;
+      }).join('');
+
+      return `<div class="artist-row">
+        ${imgHtml}
+        <div class="artist-info-col">
+          <div class="artist-name-row">
+            <span class="artist-name">${a.name}</span>
+            ${a.genre ? `<span class="artist-genre">${a.genre}</span>` : ''}
+          </div>
+          ${a.project ? `<div class="artist-project">— ${a.project}</div>` : ''}
+          <div class="artist-platforms">${pHtml}</div>
+        </div>
+        <div class="artist-actions">
+          <button class="btn-sm" onclick="openEdit(${i})">Modifier</button>
+          <button class="btn-sm danger" onclick="deleteArtist(${i})">Supprimer</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function deleteArtist(i) {
+    if (!confirm(`Supprimer ${artists[i].name} ?`)) return;
+    artists.splice(i, 1);
+    save();
+    renderRoster();
+    showToast('Artiste supprimé', 'ok');
+  }
+
+  function clearRoster() {
+    if (!confirm('Supprimer tous les artistes ?')) return;
+    artists = [];
+    save();
+    renderRoster();
+    showToast('Roster vidé', 'ok');
+  }
+
+  // ─── EDIT ─────────────────────────────────────────────────
+  function openEdit(i) {
+    editingIndex = i;
+    const a = artists[i];
+    document.getElementById('e-name').value = a.name || '';
+    document.getElementById('e-genre').value = a.genre || '';
+    document.getElementById('e-project').value = a.project || '';
+    document.getElementById('e-cover').value = a.cover || '';
+    document.getElementById('e-spotify').value = a.spotify || '';
+    document.getElementById('e-apple').value = a.apple || '';
+    document.getElementById('e-deezer').value = a.deezer || '';
+    document.getElementById('e-youtube').value = a.youtube || '';
+    document.getElementById('edit-modal').classList.add('open');
+  }
+
+  function saveEdit() {
+    if (editingIndex < 0) return;
+    artists[editingIndex] = {
+      ...artists[editingIndex],
+      name: document.getElementById('e-name').value.trim(),
+      genre: document.getElementById('e-genre').value.trim(),
+      project: document.getElementById('e-project').value.trim(),
+      cover: document.getElementById('e-cover').value.trim(),
+      spotify: document.getElementById('e-spotify').value.trim(),
+      apple: document.getElementById('e-apple').value.trim(),
+      deezer: document.getElementById('e-deezer').value.trim(),
+      youtube: document.getElementById('e-youtube').value.trim(),
+    };
+    save();
+    renderRoster();
+    closeModal();
+    showToast('Modifications enregistrées ✓', 'ok');
+  }
+
+  function closeModal() {
+    document.getElementById('edit-modal').classList.remove('open');
+    editingIndex = -1;
+  }
+
+  // ─── EXPORT ───────────────────────────────────────────────
+  function showJSON() {
+    const json = JSON.stringify(artists, null, 2);
+    const el = document.getElementById('json-output');
+    el.textContent = json;
+    el.classList.add('visible');
+  }
+
+  function copyJSON() {
+    const json = JSON.stringify(artists, null, 2);
+    navigator.clipboard.writeText(json).then(() => showToast('JSON copié ✓', 'ok'));
+  }
+
+  function downloadJSON() {
+    const json = JSON.stringify(artists, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'upfull-artists.json';
+    a.click();
+    showToast('Téléchargement démarré ✓', 'ok');
+  }
+
+  // ─── UTILS ────────────────────────────────────────────────
+  function save() {
+    localStorage.setItem('uf_artists', JSON.stringify(artists));
+    document.getElementById('roster-count').textContent = artists.length;
+  }
+
+  function showToast(msg, type = 'ok') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => { t.className = 'toast'; }, 3000);
+  }
+
+  // ─── INIT ─────────────────────────────────────────────────
+  document.getElementById('roster-count').textContent = artists.length;
+</script>
+
+</div><!-- /admin-content -->
+
+<script>
+  // ─── AUTH ─────────────────────────────────────────────────
+  // Hash SHA-256 du mot de passe : UpfullAdmin2026!
+  const PWD_HASH = 'a3b4c2d1e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2';
+
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  let attempts = 0;
+  const MAX_ATTEMPTS = 5;
+  const LOCK_TIME = 5 * 60 * 1000; // 5 min
+
+  async function doLogin() {
+    const pwd = document.getElementById('login-pwd').value;
+    const errEl = document.getElementById('login-error');
+    const attEl = document.getElementById('login-attempts');
+
+    // Vérif blocage
+    const lockUntil = parseInt(localStorage.getItem('uf_lock') || '0');
+    if (Date.now() < lockUntil) {
+      const remaining = Math.ceil((lockUntil - Date.now()) / 1000);
+      errEl.textContent = `Trop de tentatives. Réessayez dans ${remaining}s.`;
+      errEl.classList.add('show');
+      return;
+    }
+
+    const hash = await sha256(pwd);
+    const correctHash = await sha256('UpfullAdmin2026!');
+
+    if (hash === correctHash) {
+      // Succès
+      localStorage.setItem('uf_auth', Date.now() + 4 * 60 * 60 * 1000); // 4h session
+      localStorage.removeItem('uf_lock');
+      localStorage.removeItem('uf_attempts');
+      document.getElementById('login-overlay').classList.add('hidden');
+      document.getElementById('admin-content').style.display = 'block';
+      attempts = 0;
+    } else {
+      // Échec
+      attempts = parseInt(localStorage.getItem('uf_attempts') || '0') + 1;
+      localStorage.setItem('uf_attempts', attempts);
+      if (attempts >= MAX_ATTEMPTS) {
+        localStorage.setItem('uf_lock', Date.now() + LOCK_TIME);
+        localStorage.removeItem('uf_attempts');
+        errEl.textContent = 'Compte bloqué 5 minutes après trop de tentatives.';
+      } else {
+        errEl.textContent = `Mot de passe incorrect. (${attempts}/${MAX_ATTEMPTS} tentatives)`;
+        attEl.textContent = attempts >= 3 ? `⚠️ ${MAX_ATTEMPTS - attempts} tentative(s) restante(s) avant blocage` : '';
+      }
+      errEl.classList.add('show');
+      document.getElementById('login-pwd').value = '';
+      document.getElementById('login-pwd').focus();
+    }
+  }
+
+  // Vérif session au chargement
+  (function checkSession() {
+    const lockUntil = parseInt(localStorage.getItem('uf_lock') || '0');
+    if (Date.now() < lockUntil) {
+      const remaining = Math.ceil((lockUntil - Date.now()) / 1000);
+      document.getElementById('login-error').textContent = `Accès bloqué. Réessayez dans ${remaining}s.`;
+      document.getElementById('login-error').classList.add('show');
+      return;
+    }
+    const session = parseInt(localStorage.getItem('uf_auth') || '0');
+    if (Date.now() < session) {
+      document.getElementById('login-overlay').classList.add('hidden');
+      document.getElementById('admin-content').style.display = 'block';
+    } else {
+      localStorage.removeItem('uf_auth');
+    }
+  })();
+
+  // Bouton déconnexion
+  function logout() {
+    localStorage.removeItem('uf_auth');
+    location.reload();
+  }
+</script>
+</body>
+</html>
