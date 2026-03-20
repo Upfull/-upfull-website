@@ -718,8 +718,12 @@ document.querySelectorAll('.sc,.ac,.stat').forEach(function(el){
 
 
 // ── INIT ──────────────────────────────────────────────────
-renderHero();
-renderNews();
+function init(){renderHero();renderNews();}
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',init);
+} else {
+  init();
+}
 </script>
 </body>
 </html>
