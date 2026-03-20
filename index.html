@@ -369,7 +369,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:28px 24p
         <h2 class="contact-title">Prêt à propulser votre <em>prochaine sortie ?</em></h2>
         <p class="contact-body">Que vous soyez en début de carrière ou en pleine ascension, notre équipe est là pour construire avec vous une stratégie sur mesure.</p>
         <div class="contact-item"><span style="color:var(--red)">📍</span>110 rue de Fontenay, 94300 Vincennes</div>
-        <div class="contact-item"><span style="color:var(--red)">✉</span>contactupfullmusic@gmail.com</div>
+        <div class="contact-item"><span style="color:var(--red)">✉</span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0764686973666473727761726b6b6a72746e6447606a666e6b2964686a">[email&#160;protected]</a></div>
         <div class="contact-item"><span style="color:var(--red)">☎</span>07 75 73 21 28</div>
       </div>
       <div class="cform">
@@ -405,7 +405,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:28px 24p
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── ARTISTES EN VEDETTE — modifiez ici depuis l'admin ──────
 // Pour changer l'artiste en vedette, modifiez featured[0]
 // Pour changer le 2e artiste, modifiez featured[1]
@@ -545,13 +545,4 @@ document.querySelectorAll('a[href^="#"]').forEach(function(a){
 var obs=new IntersectionObserver(function(entries){
   entries.forEach(function(e){if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';}});
 },{threshold:0.08});
-document.querySelectorAll('.service-card,.artist-card,.stat').forEach(function(el){
-  el.style.opacity='0';el.style.transform='translateY(18px)';
-  el.style.transition='opacity 0.5s ease,transform 0.5s ease';obs.observe(el);
-});
-
-renderHero();
-renderNews();
-</script>
-</body>
-</html>
+document.querySelectorAll('.service-card,.art
