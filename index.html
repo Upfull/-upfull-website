@@ -599,7 +599,15 @@ var typeLabel={sortie:'Sortie',clip:'Clip',concert:'Concert'};
 var typeIcon={sortie:'♪',clip:'▶',concert:'🎤'};
 
 function renderNews(){
-  var actus=JSON.parse(localStorage.getItem('uf_actus')||'[]').filter(function(a){return a.status==='publie';});
+  var ACTUS = [
+    {id:1,type:'clip',title:'Rachelle Allison dévoile "Kon Sa" — un nouveau clip vibrant',artist:'Rachelle Allison',date:'2026-03-20',body:"Après le succès de Si Seulement, Rachelle Allison revient en force avec Kon Sa, un nouveau clip aux couleurs caribéennes. Entre énergie zouk et modernité, l artiste guadeloupéenne confirme son statut d incontournable de la scène afro-caribéenne.",youtube:'https://www.youtube.com/watch?v=jMvwTRL1mLY',spotify:'https://open.spotify.com/artist/5M0cj31cGkk0sbevwtSG52',apple:'https://music.apple.com/fr/artist/rachelle-allison/574764024',deezer:'https://www.deezer.com/fr/artist/4074413',status:'publie'},
+    {id:2,type:'clip',title:'Rody Smashboy — "Pa Di Sa Boug Li" (Prod by D.O.C Fix Dem)',artist:'Rody Smashboy',date:'2026-03-20',body:"Découvrez Pa Di Sa Boug Li, le dernier titre de Rody Smashboy en collaboration avec le producteur D.O.C Fix Dem. Un track puissant aux sonorités afro-caribéennes.",youtube:'https://www.youtube.com/watch?v=8zBioXUF1xg',status:'publie'},
+    {id:3,type:'sortie',title:'Ken J — "One Shot 2" disponible sur toutes les plateformes',artist:'Ken J',date:'2026-03-20',cover:'https://promotion-cover-images.cdn.bfan.link/cdn-cgi/image/width=480,height=480/https://promotion-cover-images.cdn.bfan.link/3f722ac1-58cf-405e-9820-380030443f44',body:"Ken J revient avec One Shot 2, un nouveau titre ambitieux distribué par Upfull Music. Disponible sur Spotify, Deezer, Apple Music et toutes les plateformes.",bfan:'https://upfullmusic.bfan.link/one-shot-2',spotify:'https://open.spotify.com/search/Ken%20J%20One%20Shot%202',apple:'https://music.apple.com/fr/search?term=Ken+J+One+Shot+2',deezer:'https://www.deezer.com/search/Ken%20J%20One%20Shot%202',status:'publie'}
+  ];
+  var adminActus = JSON.parse(localStorage.getItem('uf_actus')||'[]').filter(function(a){return a.status==='publie';});
+  var ids = ACTUS.map(function(a){return a.id;});
+  var extra = adminActus.filter(function(a){return ids.indexOf(a.id)===-1;});
+  var actus = extra.concat(ACTUS);
   var hg=document.getElementById('news-hero-grid');
   var g3=document.getElementById('news-grid3');
   if(!actus.length){
@@ -653,7 +661,15 @@ function renderNews(){
 
 // ── MODAL ─────────────────────────────────────────────────
 function openArticle(i){
-  var actus=JSON.parse(localStorage.getItem('uf_actus')||'[]').filter(function(a){return a.status==='publie';});
+  var ACTUS = [
+    {id:1,type:'clip',title:'Rachelle Allison dévoile "Kon Sa" — un nouveau clip vibrant',artist:'Rachelle Allison',date:'2026-03-20',body:"Après le succès de Si Seulement, Rachelle Allison revient en force avec Kon Sa, un nouveau clip aux couleurs caribéennes. Entre énergie zouk et modernité, l artiste guadeloupéenne confirme son statut d incontournable de la scène afro-caribéenne.",youtube:'https://www.youtube.com/watch?v=jMvwTRL1mLY',spotify:'https://open.spotify.com/artist/5M0cj31cGkk0sbevwtSG52',apple:'https://music.apple.com/fr/artist/rachelle-allison/574764024',deezer:'https://www.deezer.com/fr/artist/4074413',status:'publie'},
+    {id:2,type:'clip',title:'Rody Smashboy — "Pa Di Sa Boug Li" (Prod by D.O.C Fix Dem)',artist:'Rody Smashboy',date:'2026-03-20',body:"Découvrez Pa Di Sa Boug Li, le dernier titre de Rody Smashboy en collaboration avec le producteur D.O.C Fix Dem. Un track puissant aux sonorités afro-caribéennes.",youtube:'https://www.youtube.com/watch?v=8zBioXUF1xg',status:'publie'},
+    {id:3,type:'sortie',title:'Ken J — "One Shot 2" disponible sur toutes les plateformes',artist:'Ken J',date:'2026-03-20',cover:'https://promotion-cover-images.cdn.bfan.link/cdn-cgi/image/width=480,height=480/https://promotion-cover-images.cdn.bfan.link/3f722ac1-58cf-405e-9820-380030443f44',body:"Ken J revient avec One Shot 2, un nouveau titre ambitieux distribué par Upfull Music. Disponible sur Spotify, Deezer, Apple Music et toutes les plateformes.",bfan:'https://upfullmusic.bfan.link/one-shot-2',spotify:'https://open.spotify.com/search/Ken%20J%20One%20Shot%202',apple:'https://music.apple.com/fr/search?term=Ken+J+One+Shot+2',deezer:'https://www.deezer.com/search/Ken%20J%20One%20Shot%202',status:'publie'}
+  ];
+  var adminActus = JSON.parse(localStorage.getItem('uf_actus')||'[]').filter(function(a){return a.status==='publie';});
+  var ids = ACTUS.map(function(a){return a.id;});
+  var extra = adminActus.filter(function(a){return ids.indexOf(a.id)===-1;});
+  var actus = extra.concat(ACTUS);
   var a=actus[i]; if(!a)return;
   var yt=ytId(a.youtube);
   var cover=a.cover||(yt?'https://img.youtube.com/vi/'+yt+'/maxresdefault.jpg':null);
@@ -704,55 +720,6 @@ document.querySelectorAll('.sc,.ac,.stat').forEach(function(el){
   obs.observe(el);
 });
 
-
-// ── ARTICLES PRÉ-CHARGÉS ─────────────────────────────────
-var preloadedActus = [
-  {
-    id: 1,
-    type: 'clip',
-    title: 'Rachelle Allison dévoile "Kon Sa" — un nouveau clip vibrant',
-    artist: 'Rachelle Allison',
-    date: '2026-03-20',
-    body: 'Après le succès de "Si Seulement", Rachelle Allison revient en force avec "Kon Sa", un nouveau clip aux couleurs caribéennes. Entre énergie zouk et modernité, l'artiste guadeloupéenne confirme son statut d'incontournable de la scène afro-caribéenne. À découvrir sans attendre sur YouTube et toutes les plateformes.',
-    youtube: 'https://www.youtube.com/watch?v=jMvwTRL1mLY',
-    spotify: 'https://open.spotify.com/artist/5M0cj31cGkk0sbevwtSG52',
-    apple: 'https://music.apple.com/fr/artist/rachelle-allison/574764024',
-    deezer: 'https://www.deezer.com/fr/artist/4074413',
-    status: 'publie'
-  },
-  {
-    id: 2,
-    type: 'clip',
-    title: 'Rody Smashboy — "Pa Di Sa Boug'Li" (Prod by D.O.C Fix Dem)',
-    artist: 'Rody Smashboy',
-    date: '2026-03-20',
-    body: 'Découvrez "Pa Di Sa Boug'Li", le dernier titre de Rody Smashboy en collaboration avec le producteur D.O.C Fix Dem. Un track puissant aux sonorités afro-caribéennes, disponible maintenant sur YouTube.',
-    youtube: 'https://www.youtube.com/watch?v=8zBioXUF1xg',
-    status: 'publie'
-  },
-  {
-    id: 3,
-    type: 'sortie',
-    title: 'Ken J — "One Shot 2" disponible sur toutes les plateformes',
-    artist: 'Ken J',
-    date: '2026-03-20',
-    cover: 'https://promotion-cover-images.cdn.bfan.link/cdn-cgi/image/width=480,height=480/https://promotion-cover-images.cdn.bfan.link/3f722ac1-58cf-405e-9820-380030443f44',
-    body: 'Ken J revient avec "One Shot 2", un nouveau titre ambitieux distribué par Upfull Music. Disponible dès maintenant sur Spotify, Deezer, Apple Music et toutes les plateformes de streaming.',
-    bfan: 'https://upfullmusic.bfan.link/one-shot-2',
-    spotify: 'https://open.spotify.com/search/Ken%20J%20One%20Shot%202',
-    apple: 'https://music.apple.com/fr/search?term=Ken+J+One+Shot+2',
-    deezer: 'https://www.deezer.com/search/Ken%20J%20One%20Shot%202',
-    status: 'publie'
-  }
-];
-
-// Merge with localStorage articles
-var stored = JSON.parse(localStorage.getItem('uf_actus') || '[]');
-var storedIds = stored.map(function(a){ return a.id; });
-preloadedActus.forEach(function(a){
-  if(storedIds.indexOf(a.id) === -1) stored.unshift(a);
-});
-localStorage.setItem('uf_actus', JSON.stringify(stored));
 
 // ── INIT ──────────────────────────────────────────────────
 renderHero();
